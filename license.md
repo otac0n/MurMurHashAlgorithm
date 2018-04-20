@@ -1,4 +1,7 @@
-Copyright © 2018 John Gietzen
+MurmurHash3 was written by Austin Appleby, and is placed in the public domain.
+https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
+
+Portions of this project are Copyright © 2018 John Gietzen
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
