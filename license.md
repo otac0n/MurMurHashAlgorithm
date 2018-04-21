@@ -1,6 +1,9 @@
 MurmurHash3 was written by Austin Appleby, and is placed in the public domain.
 https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
 
+Some tests were written by Peter Scott, and are placed in the public domain.
+https://github.com/PeterScott/murmur3/blob/master/test.c
+
 Portions of this project are Copyright © 2018 John Gietzen
 
 Permission is hereby granted, free of charge, to any person obtaining

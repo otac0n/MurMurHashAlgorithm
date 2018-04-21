@@ -14,6 +14,9 @@ namespace MurMurHashAlgorithm
         private const ulong C1 = 0x87c37b91114253d5;
         private const ulong C2 = 0x4cf5ad432745937f;
 
+        private const int ChunkSize = sizeof(ulong) * 2;
+        private const int Stride = ChunkSize / sizeof(ulong);
+
         private readonly ulong seed;
 
         private ulong h1;
@@ -56,11 +59,11 @@ namespace MurMurHashAlgorithm
                 cbSize += newArray.Length;
             }
 
-            var blocks = cbSize / (sizeof(ulong) * 2);
-            this.tailLength = cbSize % (sizeof(ulong) * 2);
+            var blocks = cbSize / ChunkSize;
+            this.tailLength = cbSize % ChunkSize;
             if (this.tailLength != 0)
             {
-                var tail = this.tail ?? (this.tail = new byte[(sizeof(ulong) * 2) - 1]);
+                var tail = this.tail ?? (this.tail = new byte[ChunkSize - 1]);
                 Array.Copy(array, ibStart + cbSize - this.tailLength, tail, 0, this.tailLength);
             }
 
@@ -68,8 +71,8 @@ namespace MurMurHashAlgorithm
             {
                 for (var i = 0; i < blocks; i++)
                 {
-                    var k1 = GetBlock(array, ibStart, i * 2 + 0);
-                    var k2 = GetBlock(array, ibStart, i * 2 + 1);
+                    var k1 = GetBlock(array, ibStart, i * Stride + 0);
+                    var k2 = GetBlock(array, ibStart, i * Stride + 1);
 
                     k1 *= C1;
                     k1 = RotateLeft(k1, 31);
@@ -173,7 +176,7 @@ namespace MurMurHashAlgorithm
 
             var result = BitConverter.GetBytes(this.h1);
             var h2Bytes = BitConverter.GetBytes(this.h2);
-            Array.Resize(ref result, sizeof(ulong) * 2);
+            Array.Resize(ref result, ChunkSize);
             Array.Copy(h2Bytes, 0, result, sizeof(ulong), sizeof(ulong));
             return result;
         }
