@@ -3,5 +3,6 @@
     <Authors>John Gietzen</Authors>
     <Copyright>Copyright © 2018 $(Authors)</Copyright>
     <Product>MurMurHashAlgorithm</Product>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 </Project>
