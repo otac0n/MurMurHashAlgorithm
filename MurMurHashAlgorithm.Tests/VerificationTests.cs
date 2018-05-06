@@ -4,6 +4,7 @@
 namespace MurMurHashAlgorithm.Tests
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
@@ -15,9 +16,33 @@ namespace MurMurHashAlgorithm.Tests
         [InlineData(typeof(MurMurHash3Algorithm32x86), 0xB0F57EE3)]
         [InlineData(typeof(MurMurHash3Algorithm128x86), 0xB3ECE62A)]
         [InlineData(typeof(MurMurHash3Algorithm128x64), 0x6384BA69)]
-        public void VerificationTest(Type hashType, uint expected)
+        public void ComputeHash_Aligned_VerificationTest(Type hashType, uint expected)
         {
             var hash = new Func<byte[], object, byte[]>((array, seed) => ((HashAlgorithm)Activator.CreateInstance(hashType, new[] { seed })).ComputeHash(array));
+
+            // Hash keys of the form {0}, {0,1}, {0,1,2}... up to N=255,using 256-N as the seed
+            var hashes = new byte[256][];
+            for (var i = 0; i < 256; i++)
+            {
+                hashes[i] = hash(Enumerable.Range(0, i).Select(b => (byte)b).ToArray(), 256 - i);
+            }
+
+            // Then hash the result array
+            var final = hash(hashes.SelectMany(b => b).ToArray(), 0);
+
+            // The first four bytes of that hash, interpreted as a little-endian integer, is our verification value
+            var verification = ((uint)final[0] << 0) | ((uint)final[1] << 8) | ((uint)final[2] << 16) | ((uint)final[3] << 24);
+
+            Assert.Equal(expected, verification);
+        }
+
+        [Theory]
+        [InlineData(typeof(MurMurHash3Algorithm32x86), 0xB0F57EE3)]
+        [InlineData(typeof(MurMurHash3Algorithm128x86), 0xB3ECE62A)]
+        [InlineData(typeof(MurMurHash3Algorithm128x64), 0x6384BA69)]
+        public void ComputeHash_Unaligned_VerificationTest(Type hashType, uint expected)
+        {
+            var hash = new Func<byte[], object, byte[]>((array, seed) => ((HashAlgorithm)Activator.CreateInstance(hashType, new[] { seed })).ComputeHash(new SlowStream(3, array)));
 
             // Hash keys of the form {0}, {0,1}, {0,1,2}... up to N=255,using 256-N as the seed
             var hashes = new byte[256][];
@@ -57,6 +82,51 @@ namespace MurMurHashAlgorithm.Tests
             var result = string.Concat(Enumerable.Range(0, hash.Length / sizeof(uint)).Select(h => BitConverter.ToUInt32(hash, h * sizeof(uint)).ToString("x8")));
 
             Assert.Equal(expected, result);
+        }
+
+        private class SlowStream : Stream
+        {
+            private readonly byte[] buffer;
+
+            private readonly int chunkSize;
+
+            public SlowStream(int chunkSize, byte[] buffer)
+            {
+                this.chunkSize = chunkSize;
+                this.buffer = buffer;
+            }
+
+            public override bool CanRead => true;
+
+            public override bool CanSeek => false;
+
+            public override bool CanWrite => false;
+
+            public override long Length => this.buffer.Length;
+
+            public override long Position { get; set; }
+
+            public override void Flush()
+            {
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                var read = Math.Min(this.chunkSize, (int)Math.Min(count, this.Length - this.Position));
+
+                for (var i = 0; i < read; i++)
+                {
+                    buffer[offset + i] = this.buffer[this.Position++];
+                }
+
+                return read;
+            }
+
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+            public override void SetLength(long value) => throw new NotSupportedException();
+
+            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
         }
     }
 }

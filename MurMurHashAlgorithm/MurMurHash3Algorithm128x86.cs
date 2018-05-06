@@ -39,6 +39,15 @@ namespace MurMurHashAlgorithm
             this.Initialize();
         }
 
+        /// <inheritdoc />
+        public override int HashSize => ChunkSize;
+
+        /// <inheritdoc />
+        public override int InputBlockSize => ChunkSize;
+
+        /// <inheritdoc />
+        public override int OutputBlockSize => ChunkSize;
+
         /// <inheritdoc/>
         public override void Initialize()
         {
@@ -62,7 +71,7 @@ namespace MurMurHashAlgorithm
                 Array.Copy(array, ibStart, newArray, this.tailLength, cbSize);
                 array = newArray;
                 ibStart = 0;
-                cbSize += newArray.Length;
+                cbSize = newArray.Length;
             }
 
             var blocks = cbSize / ChunkSize;
@@ -232,12 +241,6 @@ namespace MurMurHashAlgorithm
             return result;
         }
 
-        private static uint GetBlock(byte[] array, int start, int i)
-        {
-            i = start + i * sizeof(uint);
-            return ((uint)array[i++] << 0) | ((uint)array[i++] << 8) | ((uint)array[i++] << 16) | ((uint)array[i++] << 24);
-        }
-
         /// <summary>
         /// Force all bits of a hash block to avalanche
         /// </summary>
@@ -252,6 +255,12 @@ namespace MurMurHashAlgorithm
                 block *= 0xc2b2ae35;
                 block ^= block >> 16;
             }
+        }
+
+        private static uint GetBlock(byte[] array, int start, int i)
+        {
+            i = start + i * sizeof(uint);
+            return ((uint)array[i++] << 0) | ((uint)array[i++] << 8) | ((uint)array[i++] << 16) | ((uint)array[i++] << 24);
         }
 
         private static uint RotateLeft(uint x, byte r) => (x << r) | (x >> (64 - r));

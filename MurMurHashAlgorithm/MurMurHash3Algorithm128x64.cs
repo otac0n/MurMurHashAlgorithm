@@ -35,6 +35,15 @@ namespace MurMurHashAlgorithm
             this.Initialize();
         }
 
+        /// <inheritdoc />
+        public override int HashSize => ChunkSize;
+
+        /// <inheritdoc />
+        public override int InputBlockSize => ChunkSize;
+
+        /// <inheritdoc />
+        public override int OutputBlockSize => ChunkSize;
+
         /// <inheritdoc/>
         public override void Initialize()
         {
@@ -56,7 +65,7 @@ namespace MurMurHashAlgorithm
                 Array.Copy(array, ibStart, newArray, this.tailLength, cbSize);
                 array = newArray;
                 ibStart = 0;
-                cbSize += newArray.Length;
+                cbSize = newArray.Length;
             }
 
             var blocks = cbSize / ChunkSize;
@@ -181,12 +190,6 @@ namespace MurMurHashAlgorithm
             return result;
         }
 
-        private static ulong GetBlock(byte[] array, int start, int i)
-        {
-            i = start + i * sizeof(ulong);
-            return ((ulong)array[i++] << 0) | ((ulong)array[i++] << 8) | ((ulong)array[i++] << 16) | ((ulong)array[i++] << 24) | ((ulong)array[i++] << 32) | ((ulong)array[i++] << 40) | ((ulong)array[i++] << 48) | ((ulong)array[i++] << 56);
-        }
-
         /// <summary>
         /// Force all bits of a hash block to avalanche
         /// </summary>
@@ -201,6 +204,12 @@ namespace MurMurHashAlgorithm
                 block *= 0xc4ceb9fe1a85ec53;
                 block ^= block >> 33;
             }
+        }
+
+        private static ulong GetBlock(byte[] array, int start, int i)
+        {
+            i = start + i * sizeof(ulong);
+            return ((ulong)array[i++] << 0) | ((ulong)array[i++] << 8) | ((ulong)array[i++] << 16) | ((ulong)array[i++] << 24) | ((ulong)array[i++] << 32) | ((ulong)array[i++] << 40) | ((ulong)array[i++] << 48) | ((ulong)array[i++] << 56);
         }
 
         private static ulong RotateLeft(ulong x, byte r) => (x << r) | (x >> (64 - r));
