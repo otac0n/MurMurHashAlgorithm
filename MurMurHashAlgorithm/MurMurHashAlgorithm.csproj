@@ -10,6 +10,7 @@
     <Description />
     <PackageLicenseUrl>https://raw.github.com/otac0n/MurMurHashAlgorithm/master/license.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/otac0n/MurMurHashAlgorithm</PackageProjectUrl>
+    <PackageTags>hash;hash algorithm;murmur;murmurhash</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json" Link="stylecop.json" />
